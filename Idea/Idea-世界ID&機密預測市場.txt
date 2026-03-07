@@ -1,0 +1,29 @@
+「世界 ID + 機密預測市場」
+（Best use of World ID + Privacy + Prediction Markets）
+
+概念：
+把 World ID（proof of humanness）和 Chainlink Confidential HTTP / Compute 結合，做一個：
+
+只有「1 人 1 票」的私密預測/投票市場
+
+票的內容與金額在鏈外私密計算，但最終結算結果可 verifiable。
+​
+
+為什麼夠 niche / 少替代品：
+
+一般預測市場不是針對「人」而是針對「資本」，也很少兼顧 sybil 抵抗和投票內容的隱私。
+
+World ID 現在原生只支援少數鏈，你可以用 CRE 把 proof 驗證搬到其他鏈上，正好打中 World ID + CRE 的專屬獎項。
+​
+
+demo 流程：
+
+使用 World ID 的 Off-chain 或 On-chain proof verification flow，透過 CRE 在不支援原生 World ID 的 testnet 上完成驗證。
+
+投票/下注內容透過 Confidential HTTP 傳入機密環境，統計與結算也在機密環境中完成，鏈上只記錄：
+
+每個 World ID 是否已參與
+
+最終結算結果與 payout。
+
+搭一個小 UI，展示「人數」、「選項」、「最終結果」，但個別投票內容不可見。

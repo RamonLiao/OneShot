@@ -1,0 +1,5 @@
+{
+  "name": "privapoll",
+  "private": true,
+  "workspaces": ["app", "cre"]
+}

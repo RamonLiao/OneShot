@@ -1,0 +1,12 @@
+tasks/progress.md
+tasks/lessons.md
+.claude/
+
+node_modules/
+.env
+.env.local
+contracts/out/
+contracts/cache/
+app/.next/
+*.db
+.DS_Store
