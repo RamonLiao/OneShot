@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #181818;
-}
+/* Use class-based dark mode (.dark on <html>) instead of media query */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -17,23 +15,46 @@
   --color-brand-purple: #8600FF;
   --color-brand-green: #00C230;
 
-  /* Dark palette */
-  --color-surface-0: #0F1012;
-  --color-surface-1: #191C20;
-  --color-surface-2: #1E2028;
-  --color-surface-3: #262830;
-  --color-border-dim: #2A2D36;
-  --color-border-default: #363940;
-  --color-text-primary: #F3F4F5;
-  --color-text-secondary: #9BA3AE;
-  --color-text-dim: #656B78;
+  /* Semantic tokens (overridden by theme) */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border-dim: var(--border-dim);
+  --color-border-default: var(--border-default);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-dim: var(--text-dim);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0F1012;
-    --foreground: #F3F4F5;
-  }
+/* ─── Light theme (default) ─── */
+:root {
+  --background: #F7F8FA;
+  --foreground: #181818;
+  --surface-0: #F7F8FA;
+  --surface-1: #FFFFFF;
+  --surface-2: #FFFFFF;
+  --surface-3: #EEF0F4;
+  --border-dim: #E2E5EB;
+  --border-default: #D0D4DC;
+  --text-primary: #181818;
+  --text-secondary: #5F6878;
+  --text-dim: #8E95A2;
+}
+
+/* ─── Dark theme ─── */
+.dark {
+  --background: #0F1012;
+  --foreground: #F3F4F5;
+  --surface-0: #0F1012;
+  --surface-1: #191C20;
+  --surface-2: #1E2028;
+  --surface-3: #262830;
+  --border-dim: #2A2D36;
+  --border-default: #363940;
+  --text-primary: #F3F4F5;
+  --text-secondary: #9BA3AE;
+  --text-dim: #656B78;
 }
 
 body {

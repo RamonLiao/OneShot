@@ -51,7 +51,7 @@ export default function MarketPage({
     if (cached) setSession(cached);
   }, []);
 
-  useEffect(() => {
+  const fetchMarket = useCallback(() => {
     fetch(`/api/markets/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -63,6 +63,10 @@ export default function MarketPage({
       })
       .catch(() => setLoadStatus("error"));
   }, [id]);
+
+  useEffect(() => {
+    fetchMarket();
+  }, [fetchMarket]);
 
   const fetchExistingBet = useCallback(() => {
     if (!session) return;
@@ -97,6 +101,7 @@ export default function MarketPage({
         return;
       }
       setExistingBet(null);
+      fetchMarket();
     } finally {
       setCancelling(false);
     }
@@ -112,7 +117,7 @@ export default function MarketPage({
 
   if (loadStatus === "error" || !market) {
     return (
-      <div className="rounded-xl border border-red-900 bg-red-950/50 p-6 text-center text-sm text-red-400">
+      <div className="rounded-xl border border-red-300 bg-red-50 p-6 text-center text-sm text-red-600 dark:border-red-900 dark:bg-red-950/50 dark:text-red-400">
         Market not found.
       </div>
     );
@@ -198,7 +203,7 @@ export default function MarketPage({
             type="button"
             onClick={handleCancel}
             disabled={cancelling}
-            className="mt-1 w-full rounded-lg border border-red-800/60 py-2.5 text-xs font-medium text-red-400 hover:bg-red-950/40 transition-colors disabled:opacity-50"
+            className="mt-1 w-full rounded-lg border border-red-300 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-800/60 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors disabled:opacity-50"
           >
             {cancelling ? "Cancelling..." : "Cancel Bet & Refund"}
           </button>
@@ -241,7 +246,7 @@ export default function MarketPage({
             scalarHigh={market.scalarHigh}
             token={session.token}
             crePublicKey={session.crePublicKey}
-            onBetPlaced={fetchExistingBet}
+            onBetPlaced={() => { fetchExistingBet(); fetchMarket(); }}
           />
         </div>
       )}

@@ -69,7 +69,7 @@ export default function SettingsPage() {
             </span>
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-red-800 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-950/50 transition-colors"
+              className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/50 transition-colors"
             >
               Log out
             </button>

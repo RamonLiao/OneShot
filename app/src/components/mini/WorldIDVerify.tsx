@@ -8,7 +8,6 @@ import {
 } from "@worldcoin/minikit-js";
 
 interface Props {
-  /** Called on successful verification with token + CRE public key */
   onVerified: (session: {
     token: string;
     hashedUserId: string;
@@ -18,26 +17,22 @@ interface Props {
 
 type Status = "idle" | "verifying" | "submitting" | "error";
 
+const ACTION = "privapoll-auth";
+
 export default function WorldIDVerify({ onVerified }: Props) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const isMiniKit = typeof window !== "undefined" && MiniKit.isInstalled();
 
-  async function handleVerify() {
-    if (!MiniKit.isInstalled()) {
-      setStatus("error");
-      setErrorMsg("Please open this app inside World App.");
-      return;
-    }
-
+  // ─── MiniKit flow (inside World App) ───
+  async function handleMiniKitVerify() {
     setStatus("verifying");
     setErrorMsg("");
-
     try {
       const verifyPayload: VerifyCommandInput = {
-        action: "privapoll-auth",
+        action: ACTION,
         verification_level: VerificationLevel.Orb,
       };
-
       const { finalPayload } =
         await MiniKit.commandsAsync.verify(verifyPayload);
 
@@ -45,7 +40,6 @@ export default function WorldIDVerify({ onVerified }: Props) {
         throw new Error("World ID verification was cancelled or failed.");
       }
 
-      // Type-narrow to single-action success payload
       const payload = finalPayload as {
         proof: string;
         merkle_root: string;
@@ -54,24 +48,15 @@ export default function WorldIDVerify({ onVerified }: Props) {
       };
 
       setStatus("submitting");
-
       const res = await fetch("/api/worldid/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proof: payload.proof,
-          merkle_root: payload.merkle_root,
-          nullifier_hash: payload.nullifier_hash,
-          verification_level: payload.verification_level,
-          action: "privapoll-auth",
-        }),
+        body: JSON.stringify({ ...payload, action: ACTION }),
       });
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Verification failed (${res.status})`);
       }
-
       const data = await res.json();
       onVerified(data);
     } catch (err: unknown) {
@@ -79,6 +64,32 @@ export default function WorldIDVerify({ onVerified }: Props) {
       setErrorMsg(err instanceof Error ? err.message : "Verification failed");
     }
   }
+
+  // ─── Demo flow (browser, no World App) ───
+  async function handleDemoVerify() {
+    setStatus("submitting");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/worldid/demo", { method: "POST" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Demo login failed");
+      }
+      const data = await res.json();
+      onVerified(data);
+    } catch (err: unknown) {
+      setStatus("error");
+      setErrorMsg(err instanceof Error ? err.message : "Demo login failed");
+    }
+  }
+
+  const buttonDisabled = status === "verifying" || status === "submitting";
+  const buttonLabel =
+    status === "verifying"
+      ? "Verifying..."
+      : status === "submitting"
+        ? "Confirming..."
+        : "Verify with World ID";
 
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border border-border-dim bg-surface-2 p-6 text-center">
@@ -107,20 +118,32 @@ export default function WorldIDVerify({ onVerified }: Props) {
         </p>
       </div>
 
-      <button
-        onClick={handleVerify}
-        disabled={status === "verifying" || status === "submitting"}
-        className="w-full rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-surface-0 transition-colors hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {status === "verifying"
-          ? "Verifying..."
-          : status === "submitting"
-            ? "Confirming..."
-            : "Verify with World ID"}
-      </button>
+      {isMiniKit ? (
+        <button
+          onClick={handleMiniKitVerify}
+          disabled={buttonDisabled}
+          className="w-full rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-surface-0 transition-colors hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {buttonLabel}
+        </button>
+      ) : (
+        <div className="flex w-full flex-col gap-2">
+          <button
+            onClick={handleDemoVerify}
+            disabled={buttonDisabled}
+            className="w-full rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-surface-0 transition-colors hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {status === "submitting" ? "Logging in..." : "Enter Demo Mode"}
+          </button>
+          <p className="text-[10px] text-text-dim">
+            World ID verification requires World App.
+            Demo mode lets you explore the full experience.
+          </p>
+        </div>
+      )}
 
       {status === "error" && (
-        <p className="text-xs text-red-400">{errorMsg}</p>
+        <p className="text-xs text-red-600 dark:text-red-400">{errorMsg}</p>
       )}
     </div>
   );

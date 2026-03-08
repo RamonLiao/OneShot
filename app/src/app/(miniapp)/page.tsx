@@ -82,7 +82,7 @@ export default function Home() {
 
   if (status === "error") {
     return (
-      <div className="rounded-xl border border-red-900 bg-red-950/50 p-6 text-center text-sm text-red-400">
+      <div className="rounded-xl border border-red-300 bg-red-50 p-6 text-center text-sm text-red-600 dark:border-red-900 dark:bg-red-950/50 dark:text-red-400">
         Failed to load markets.
       </div>
     );
