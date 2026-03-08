@@ -55,7 +55,13 @@ export async function POST(req: NextRequest) {
   );
 
   const token = await createSession(hashedUserId);
-  const crePublicKey = process.env.CRE_PUBLIC_KEY || "";
+
+  // Strip PEM headers/footers and newlines — frontend expects raw base64 DER
+  const rawKey = process.env.CRE_PUBLIC_KEY || "";
+  const crePublicKey = rawKey
+    .replace(/-----BEGIN [A-Z ]+-----/g, "")
+    .replace(/-----END [A-Z ]+-----/g, "")
+    .replace(/\s+/g, "");
 
   return NextResponse.json({ token, hashedUserId, crePublicKey });
 }

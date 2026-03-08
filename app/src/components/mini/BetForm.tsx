@@ -120,11 +120,16 @@ export default function BetForm({
       };
 
       if (crePublicKey) {
+        // Strip PEM headers if present (legacy sessions may have them)
+        const cleanKey = crePublicKey
+          .replace(/-----BEGIN [A-Z ]+-----/g, "")
+          .replace(/-----END [A-Z ]+-----/g, "")
+          .replace(/\s+/g, "");
         try {
-          ciphertext = await encryptPayload(betPayload, crePublicKey);
+          ciphertext = await encryptPayload(betPayload, cleanKey);
         } catch {
           setStatus("error");
-          setErrorMsg("Encryption failed — CRE public key may be invalid");
+          setErrorMsg("Encryption failed — try logging out and back in from Settings");
           return;
         }
       }
@@ -230,13 +235,13 @@ export default function BetForm({
           placeholder="10.00"
           className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
         />
-        <div className="mt-2 flex gap-2">
+        <div className="mt-2 grid grid-cols-4 gap-2">
           {QUICK_AMOUNTS.map((v) => (
             <button
               key={v}
               type="button"
               onClick={() => setAmount(String(v))}
-              className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg border py-1.5 text-xs font-medium transition-colors ${
                 amount === String(v)
                   ? "border-violet-500 bg-violet-600/20 text-violet-300"
                   : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500"

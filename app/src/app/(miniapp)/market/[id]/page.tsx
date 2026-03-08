@@ -81,13 +81,13 @@ export default function MarketPage({
       </a>
 
       {/* Market info */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 overflow-hidden">
-        <div className="mb-2 flex items-center gap-2 flex-wrap">
-          <span className="rounded-full bg-violet-900/60 px-2 py-0.5 text-[11px] font-medium text-violet-300 uppercase tracking-wide">
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="shrink-0 rounded-full bg-violet-900/60 px-2 py-0.5 text-[11px] font-medium text-violet-300 uppercase tracking-wide">
             {market.marketType}
           </span>
           <span
-            className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-medium ${
+            className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
               isOpen
                 ? "bg-emerald-900/60 text-emerald-300"
                 : "bg-zinc-800 text-zinc-500"
