@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyCloudProof, type ISuccessResult } from "@worldcoin/minikit-js";
 import { deriveHashedUserId, createSession } from "@/lib/auth";
 import { dbRun } from "@/lib/db";
 
-const APP_ID = (process.env.WORLD_APP_ID || "") as `app_${string}`;
+// World ID 4.0 uses RP ID + v4 endpoint
+const APP_ID = process.env.WORLD_APP_ID || "";
+const RP_ID = process.env.WORLD_RP_ID || "";
 
 export async function POST(req: NextRequest) {
   const { nullifier_hash, proof, merkle_root, verification_level, action } = await req.json();
@@ -12,29 +13,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  try {
-    const verifyRes = await verifyCloudProof(
-      {
-        proof,
-        merkle_root,
-        nullifier_hash,
-        verification_level,
-      } as ISuccessResult,
-      APP_ID,
-      action || "privapoll-auth",
-    );
+  // Use World ID 4.0 v4 endpoint with legacy protocol_version 3.0
+  const rpId = RP_ID || APP_ID;
+  const verifyUrl = `https://developer.world.org/api/v4/verify/${rpId}`;
 
-    if (!verifyRes.success) {
-      return NextResponse.json(
-        { error: `verify failed: ${verifyRes.code} ${verifyRes.detail}` },
-        { status: 401 },
-      );
-    }
-  } catch (err) {
-    return NextResponse.json(
-      { error: `verify exception: ${err instanceof Error ? err.message : String(err)}` },
-      { status: 500 },
-    );
+  const verifyRes = await fetch(verifyUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nullifier_hash,
+      proof,
+      merkle_root,
+      verification_level: verification_level || "orb",
+      action: action || "privapoll-auth",
+      signal_hash: "",
+    }),
+  });
+
+  if (!verifyRes.ok) {
+    const err = await verifyRes.json().catch(() => ({}));
+    const detail = `status=${verifyRes.status} rp=${rpId} code=${err?.code || "?"} msg=${err?.message || err?.detail || JSON.stringify(err)}`;
+    console.error("[worldid] v4 verify failed:", detail);
+    return NextResponse.json({ error: detail }, { status: 401 });
   }
 
   const hashedUserId = deriveHashedUserId(nullifier_hash);
