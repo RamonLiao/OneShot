@@ -3,7 +3,6 @@ import { deriveHashedUserId, createSession } from "@/lib/auth";
 import { dbRun } from "@/lib/db";
 
 const WORLD_APP_ID = process.env.WORLD_APP_ID || "";
-const WORLD_VERIFY_URL = "https://developer.worldcoin.org/api/v2/verify";
 
 export async function POST(req: NextRequest) {
   const { nullifier_hash, proof, merkle_root, verification_level, action } = await req.json();
@@ -12,8 +11,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  // Verify with World ID API
-  const verifyRes = await fetch(WORLD_VERIFY_URL, {
+  // Verify with World ID API — app_id goes in the URL path
+  const verifyUrl = `https://developer.worldcoin.org/api/v2/verify/${WORLD_APP_ID}`;
+  const verifyRes = await fetch(verifyUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -22,12 +22,12 @@ export async function POST(req: NextRequest) {
       merkle_root,
       verification_level: verification_level || "orb",
       action: action || "privapoll-auth",
-      app_id: WORLD_APP_ID,
     }),
   });
 
   if (!verifyRes.ok) {
     const err = await verifyRes.json().catch(() => ({}));
+    console.error("[worldid] verify failed:", verifyRes.status, err);
     return NextResponse.json({ error: "World ID verification failed", detail: err }, { status: 401 });
   }
 
