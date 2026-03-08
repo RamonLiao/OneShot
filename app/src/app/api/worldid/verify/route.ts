@@ -27,8 +27,9 @@ export async function POST(req: NextRequest) {
 
   if (!verifyRes.ok) {
     const err = await verifyRes.json().catch(() => ({}));
-    console.error("[worldid] verify failed:", verifyRes.status, err);
-    return NextResponse.json({ error: "World ID verification failed", detail: err }, { status: 401 });
+    const detail = `status=${verifyRes.status} app=${WORLD_APP_ID} code=${err?.code || "?"} msg=${err?.message || err?.detail || JSON.stringify(err)}`;
+    console.error("[worldid] verify failed:", detail);
+    return NextResponse.json({ error: detail }, { status: 401 });
   }
 
   const hashedUserId = deriveHashedUserId(nullifier_hash);
