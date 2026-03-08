@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyCloudProof, type ISuccessResult } from "@worldcoin/minikit-js";
 import { deriveHashedUserId, createSession } from "@/lib/auth";
 import { dbRun } from "@/lib/db";
 
-const WORLD_APP_ID = process.env.WORLD_APP_ID || "";
+const APP_ID = (process.env.WORLD_APP_ID || "") as `app_${string}`;
 
 export async function POST(req: NextRequest) {
   const { nullifier_hash, proof, merkle_root, verification_level, action } = await req.json();
@@ -11,25 +12,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  // Verify with World ID API — app_id goes in the URL path
-  const verifyUrl = `https://developer.worldcoin.org/api/v2/verify/${WORLD_APP_ID}`;
-  const verifyRes = await fetch(verifyUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      nullifier_hash,
-      proof,
-      merkle_root,
-      verification_level: verification_level || "orb",
-      action: action || "privapoll-auth",
-    }),
-  });
+  try {
+    const verifyRes = await verifyCloudProof(
+      {
+        proof,
+        merkle_root,
+        nullifier_hash,
+        verification_level,
+      } as ISuccessResult,
+      APP_ID,
+      action || "privapoll-auth",
+    );
 
-  if (!verifyRes.ok) {
-    const err = await verifyRes.json().catch(() => ({}));
-    const detail = `status=${verifyRes.status} app=${WORLD_APP_ID} code=${err?.code || "?"} msg=${err?.message || err?.detail || JSON.stringify(err)}`;
-    console.error("[worldid] verify failed:", detail);
-    return NextResponse.json({ error: detail }, { status: 401 });
+    if (!verifyRes.success) {
+      return NextResponse.json(
+        { error: `verify failed: ${verifyRes.code} ${verifyRes.detail}` },
+        { status: 401 },
+      );
+    }
+  } catch (err) {
+    return NextResponse.json(
+      { error: `verify exception: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 },
+    );
   }
 
   const hashedUserId = deriveHashedUserId(nullifier_hash);
