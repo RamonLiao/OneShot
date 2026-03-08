@@ -20,20 +20,37 @@ function timeRemaining(closeTime: number): string {
   return `${hours}h ${mins}m`;
 }
 
-export default function MarketCard({ market }: { market: MarketSummary }) {
+interface Props {
+  market: MarketSummary;
+  myBetAmount?: number; // in micro-USDC (6 decimals)
+}
+
+export default function MarketCard({ market, myBetAmount }: Props) {
   const remaining = timeRemaining(market.closeTime);
   const isOpen = market.status === "Open";
+  const hasBet = myBetAmount != null && myBetAmount > 0;
 
   return (
     <Link href={`/market/${market.marketId}`}>
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 transition-colors hover:border-zinc-600 active:bg-zinc-800">
+      <div
+        className={`rounded-xl border p-4 transition-colors active:bg-zinc-800 ${
+          hasBet
+            ? "border-violet-700/60 bg-violet-950/20 hover:border-violet-600"
+            : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+        }`}
+      >
         {/* Badge row */}
         <div className="mb-2 flex items-center gap-2">
-          <span className="rounded-full bg-violet-900/60 px-2 py-0.5 text-[11px] font-medium text-violet-300 uppercase tracking-wide">
+          <span className="shrink-0 rounded-full bg-violet-900/60 px-2 py-0.5 text-[11px] font-medium text-violet-300 uppercase tracking-wide">
             {market.marketType}
           </span>
+          {hasBet && (
+            <span className="shrink-0 rounded-full bg-violet-600/30 px-2 py-0.5 text-[11px] font-medium text-violet-300">
+              ${(myBetAmount / 1e6).toFixed(2)} bet
+            </span>
+          )}
           <span
-            className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-medium ${
+            className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
               isOpen
                 ? "bg-emerald-900/60 text-emerald-300"
                 : "bg-zinc-800 text-zinc-500"

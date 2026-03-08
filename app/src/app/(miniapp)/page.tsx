@@ -12,19 +12,25 @@ interface BalanceRow {
   allocated: number;
 }
 
+interface MyBet {
+  marketId: number;
+  amount: number;
+}
+
 export default function Home() {
   const [markets, setMarkets] = useState<MarketSummary[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [balance, setBalance] = useState<number | null>(null);
   const [hasSession, setHasSession] = useState(false);
+  const [myBets, setMyBets] = useState<Map<number, number>>(new Map());
 
   useEffect(() => {
     const session = loadSession();
     if (session) {
       setHasSession(true);
-      fetch("/api/positions", {
-        headers: { Authorization: `Bearer ${session.token}` },
-      })
+      const headers = { Authorization: `Bearer ${session.token}` };
+
+      fetch("/api/positions", { headers })
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.balances) {
@@ -35,6 +41,17 @@ export default function Home() {
             setBalance(total);
           } else {
             setBalance(0);
+          }
+        })
+        .catch(() => {});
+
+      fetch("/api/bets/mine", { headers })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.bets) {
+            const m = new Map<number, number>();
+            (data.bets as MyBet[]).forEach((b) => m.set(b.marketId, b.amount));
+            setMyBets(m);
           }
         })
         .catch(() => {});
@@ -97,7 +114,11 @@ export default function Home() {
             Active Markets
           </h2>
           {markets.map((m) => (
-            <MarketCard key={m.marketId} market={m} />
+            <MarketCard
+              key={m.marketId}
+              market={m}
+              myBetAmount={myBets.get(m.marketId)}
+            />
           ))}
         </div>
       )}

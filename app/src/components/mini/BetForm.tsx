@@ -12,6 +12,7 @@ interface Props {
   token: string;
   crePublicKey: string;
   walletAddress?: string;
+  onBetPlaced?: () => void;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -59,6 +60,7 @@ export default function BetForm({
   token,
   crePublicKey,
   walletAddress,
+  onBetPlaced,
 }: Props) {
   const isScalar = marketType === "Scalar";
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -160,6 +162,7 @@ export default function BetForm({
       const data = await res.json();
       setBetId(data.betId);
       setStatus("success");
+      onBetPlaced?.();
     } catch (err: unknown) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Failed to place bet");
