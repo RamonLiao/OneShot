@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { dbAll } from "@/lib/db";
 import { verifyHmac } from "@/lib/hmac";
 
 export async function GET(req: NextRequest) {
@@ -9,17 +9,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const db = getDb();
-  const markets = db
-    .prepare(
-      `SELECT marketId, question, options, marketType, closeTime, oracleApiUrl
-       FROM markets
-       WHERE status = 'Open'
-         AND oracleApiUrl IS NOT NULL
-         AND oracleApiUrl != ''
-         AND closeTime <= unixepoch()`
-    )
-    .all() as Record<string, unknown>[];
+  const markets = await dbAll<Record<string, unknown>>(
+    `SELECT marketId, question, options, marketType, closeTime, oracleApiUrl
+     FROM markets
+     WHERE status = 'Open'
+       AND oracleApiUrl IS NOT NULL
+       AND oracleApiUrl != ''
+       AND closeTime <= unixepoch()`
+  );
 
   const parsed = markets.map((row) => ({
     ...row,

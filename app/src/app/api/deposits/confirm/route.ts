@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromHeader } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { dbRun, dbGet } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromHeader(req.headers.get("authorization"));
@@ -19,22 +19,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User mismatch" }, { status: 403 });
   }
 
-  const db = getDb();
   const chainId = "world-chain";
 
   // Upsert balance: increment deposited for user on world-chain
-  db.prepare(
+  await dbRun(
     `INSERT INTO balances (hashedUserId, chainId, deposited, allocated)
      VALUES (?, ?, ?, 0)
-     ON CONFLICT(hashedUserId, chainId) DO UPDATE SET deposited = deposited + ?`
-  ).run(hashedUserId, chainId, amount, amount);
+     ON CONFLICT(hashedUserId, chainId) DO UPDATE SET deposited = deposited + ?`,
+    hashedUserId, chainId, amount, amount
+  );
 
-  const row = db
-    .prepare("SELECT deposited, allocated FROM balances WHERE hashedUserId = ? AND chainId = ?")
-    .get(hashedUserId, chainId) as { deposited: number; allocated: number };
+  const row = await dbGet<{ deposited: number; allocated: number }>(
+    "SELECT deposited, allocated FROM balances WHERE hashedUserId = ? AND chainId = ?",
+    hashedUserId, chainId
+  );
 
   return NextResponse.json({
     success: true,
-    newBalance: row.deposited - row.allocated,
+    newBalance: (row?.deposited || 0) - (row?.allocated || 0),
   });
 }

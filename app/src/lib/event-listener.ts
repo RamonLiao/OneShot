@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { SUPPORTED_CHAINS, type ChainConfig } from "./chains";
-import { getDb } from "./db";
+import { dbRun, dbBatch } from "./db";
 
 const VAULT_EVENTS_ABI = [
   "event Deposited(bytes32 indexed hashedUserId, uint256 amount)",
@@ -29,29 +29,29 @@ async function pollChain(chainId: string, chain: ChainConfig): Promise<number> {
     toBlock,
   );
 
-  const db = getDb();
-
-  const ensureUser = db.prepare(
-    `INSERT OR IGNORE INTO users (hashedUserId, sessionExpiry) VALUES (?, 0)`,
-  );
-  const upsertBalance = db.prepare(`
-    INSERT INTO balances (hashedUserId, chainId, deposited, allocated)
-    VALUES (?, ?, ?, 0)
-    ON CONFLICT(hashedUserId, chainId) DO UPDATE SET deposited = deposited + ?
-  `);
-
-  const runBatch = db.transaction(() => {
-    for (const ev of events) {
+  if (events.length > 0) {
+    const statements = events.flatMap((ev) => {
       const log = ev as ethers.EventLog;
-      const hashedUserId = log.args[0] as string;     // bytes32
-      const amount = Number(log.args[1] as bigint);    // uint256 → number (safe for hackathon amounts)
+      const hashedUserId = log.args[0] as string;
+      const amount = Number(log.args[1] as bigint);
 
-      ensureUser.run(hashedUserId);
-      upsertBalance.run(hashedUserId, chainId, amount, amount);
-    }
-  });
+      return [
+        {
+          sql: `INSERT OR IGNORE INTO users (hashedUserId, sessionExpiry) VALUES (?, 0)`,
+          args: [hashedUserId],
+        },
+        {
+          sql: `INSERT INTO balances (hashedUserId, chainId, deposited, allocated)
+                VALUES (?, ?, ?, 0)
+                ON CONFLICT(hashedUserId, chainId) DO UPDATE SET deposited = deposited + ?`,
+          args: [hashedUserId, chainId, amount, amount],
+        },
+      ];
+    });
 
-  runBatch();
+    await dbBatch(statements);
+  }
+
   lastBlock[chainId] = toBlock;
 
   return events.length;

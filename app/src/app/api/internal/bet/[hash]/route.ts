@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { dbGet } from "@/lib/db";
 import { verifyHmac } from "@/lib/hmac";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ hash: string }> }) {
@@ -9,12 +9,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ hash
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const db = getDb();
-  const bet = db
-    .prepare(
-      "SELECT betId, marketId, hashedUserId, ciphertextHash, ciphertext, amount, sourceChainId FROM bets WHERE ciphertextHash = ?"
-    )
-    .get(hash) as Record<string, unknown> | undefined;
+  const bet = await dbGet<Record<string, unknown>>(
+    "SELECT betId, marketId, hashedUserId, ciphertextHash, ciphertext, amount, sourceChainId FROM bets WHERE ciphertextHash = ?",
+    hash
+  );
 
   if (!bet) {
     return NextResponse.json({ error: "Bet not found" }, { status: 404 });
@@ -22,6 +20,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ hash
 
   return NextResponse.json({
     ...bet,
-    ciphertext: Buffer.from(bet.ciphertext as Buffer).toString("base64"),
+    ciphertext: typeof bet.ciphertext === "string"
+      ? bet.ciphertext
+      : Buffer.from(bet.ciphertext as Buffer).toString("base64"),
   });
 }

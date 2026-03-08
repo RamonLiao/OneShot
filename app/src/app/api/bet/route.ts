@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 import { getSessionFromHeader } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { dbGet, dbBatch } from "@/lib/db";
 import { ciphertextHash } from "@/lib/crypto";
 import { sendPlaceBet, sendAllocate } from "@/lib/operator";
+import { dbRun } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromHeader(req.headers.get("authorization"));
@@ -18,29 +19,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const db = getDb();
   const { hashedUserId } = session;
 
   // Check market is open
-  const market = db.prepare("SELECT status FROM markets WHERE marketId = ?").get(marketId) as
-    | { status: string }
-    | undefined;
+  const market = await dbGet<{ status: string }>(
+    "SELECT status FROM markets WHERE marketId = ?", marketId
+  );
   if (!market || market.status !== "Open") {
     return NextResponse.json({ error: "Market not open" }, { status: 400 });
   }
 
   // Check not already bet on this market
-  const existingBet = db
-    .prepare("SELECT betId FROM bets WHERE marketId = ? AND hashedUserId = ?")
-    .get(marketId, hashedUserId);
+  const existingBet = await dbGet(
+    "SELECT betId FROM bets WHERE marketId = ? AND hashedUserId = ?",
+    marketId, hashedUserId
+  );
   if (existingBet) {
     return NextResponse.json({ error: "Already placed bet on this market" }, { status: 409 });
   }
 
   // Check cache balance
-  const balance = db
-    .prepare("SELECT deposited, allocated FROM balances WHERE hashedUserId = ? AND chainId = ?")
-    .get(hashedUserId, sourceChainId) as { deposited: number; allocated: number } | undefined;
+  const balance = await dbGet<{ deposited: number; allocated: number }>(
+    "SELECT deposited, allocated FROM balances WHERE hashedUserId = ? AND chainId = ?",
+    hashedUserId, sourceChainId
+  );
 
   const available = (balance?.deposited || 0) - (balance?.allocated || 0);
   if (available < amount) {
@@ -52,20 +54,17 @@ export async function POST(req: NextRequest) {
   const cHash = ciphertextHash(ciphertextBuf);
   const betId = uuid();
 
-  const insertBet = db.prepare(
-    `INSERT INTO bets (betId, marketId, hashedUserId, ciphertextHash, ciphertext, amount, sourceChainId)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  );
-
-  const updateBalance = db.prepare(
-    `UPDATE balances SET allocated = allocated + ? WHERE hashedUserId = ? AND chainId = ?`
-  );
-
-  const txn = db.transaction(() => {
-    insertBet.run(betId, marketId, hashedUserId, cHash, ciphertextBuf, amount, sourceChainId);
-    updateBalance.run(amount, hashedUserId, sourceChainId);
-  });
-  txn();
+  await dbBatch([
+    {
+      sql: `INSERT INTO bets (betId, marketId, hashedUserId, ciphertextHash, ciphertext, amount, sourceChainId)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [betId, marketId, hashedUserId, cHash, ciphertextBuf, amount, sourceChainId],
+    },
+    {
+      sql: `UPDATE balances SET allocated = allocated + ? WHERE hashedUserId = ? AND chainId = ?`,
+      args: [amount, hashedUserId, sourceChainId],
+    },
+  ]);
 
   // Send on-chain txs (non-blocking for UX, but we await for correctness)
   try {
@@ -76,7 +75,7 @@ export async function POST(req: NextRequest) {
       BigInt(amount),
       Number(sourceChainId) || 1
     );
-    db.prepare("UPDATE bets SET onchainTxHash = ? WHERE betId = ?").run(txHash, betId);
+    await dbRun("UPDATE bets SET onchainTxHash = ? WHERE betId = ?", txHash, betId);
 
     await sendAllocate(sourceChainId, hashedUserId, BigInt(amount));
   } catch (err) {

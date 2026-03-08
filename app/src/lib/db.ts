@@ -1,21 +1,22 @@
-import Database from "better-sqlite3";
-import path from "path";
+import { createClient, type Client, type InValue } from "@libsql/client";
 
-const DB_PATH = process.env.DATABASE_URL?.replace("file:", "") || path.join(process.cwd(), "dev.db");
+let _client: Client | null = null;
 
-let _db: Database.Database | null = null;
-
-export function getDb(): Database.Database {
-  if (_db) return _db;
-  _db = new Database(DB_PATH);
-  _db.pragma("journal_mode = WAL");
-  _db.pragma("foreign_keys = ON");
-  initTables(_db);
-  return _db;
+function getClient(): Client {
+  if (_client) return _client;
+  _client = createClient({
+    url: process.env.TURSO_DATABASE_URL || "file:dev.db",
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+  return _client;
 }
 
-function initTables(db: Database.Database) {
-  db.exec(`
+let _initialized = false;
+
+export async function initDb(): Promise<void> {
+  if (_initialized) return;
+  const client = getClient();
+  await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS users (
       hashedUserId TEXT PRIMARY KEY,
       sessionExpiry INTEGER NOT NULL,
@@ -68,4 +69,39 @@ function initTables(db: Database.Database) {
       PRIMARY KEY (hashedUserId, marketId, chainId)
     );
   `);
+  _initialized = true;
+}
+
+export async function dbGet<T = Record<string, unknown>>(
+  sql: string,
+  ...args: InValue[]
+): Promise<T | undefined> {
+  await initDb();
+  const result = await getClient().execute({ sql, args });
+  return result.rows[0] as T | undefined;
+}
+
+export async function dbAll<T = Record<string, unknown>>(
+  sql: string,
+  ...args: InValue[]
+): Promise<T[]> {
+  await initDb();
+  const result = await getClient().execute({ sql, args });
+  return result.rows as T[];
+}
+
+export async function dbRun(
+  sql: string,
+  ...args: InValue[]
+): Promise<{ changes: number }> {
+  await initDb();
+  const result = await getClient().execute({ sql, args });
+  return { changes: Number(result.rowsAffected) };
+}
+
+export async function dbBatch(
+  statements: { sql: string; args: InValue[] }[]
+): Promise<void> {
+  await initDb();
+  await getClient().batch(statements, "write");
 }

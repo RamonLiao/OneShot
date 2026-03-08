@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromHeader } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { dbGet } from "@/lib/db";
 import { signClaimMessage } from "@/lib/operator";
 
 export async function POST(req: NextRequest) {
@@ -14,14 +14,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing marketId or chainId" }, { status: 400 });
   }
 
-  const db = getDb();
   const { hashedUserId } = session;
 
-  const payout = db
-    .prepare(
-      "SELECT amount, claimed FROM payouts WHERE hashedUserId = ? AND marketId = ? AND chainId = ?"
-    )
-    .get(hashedUserId, marketId, chainId) as { amount: number; claimed: number } | undefined;
+  const payout = await dbGet<{ amount: number; claimed: number }>(
+    "SELECT amount, claimed FROM payouts WHERE hashedUserId = ? AND marketId = ? AND chainId = ?",
+    hashedUserId, marketId, chainId
+  );
 
   if (!payout) {
     return NextResponse.json({ error: "No payout found" }, { status: 404 });
