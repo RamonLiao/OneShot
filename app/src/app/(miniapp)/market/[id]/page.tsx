@@ -4,16 +4,16 @@ import { useEffect, useState, use } from "react";
 import WorldIDVerify from "@/components/mini/WorldIDVerify";
 import BetForm from "@/components/mini/BetForm";
 import MiniKitDeposit from "@/components/mini/MiniKitDeposit";
-
-interface MarketOption {
-  id: number;
-  label: string;
-}
+import {
+  loadSession,
+  saveSession,
+  type Session,
+} from "@/lib/session";
 
 interface MarketDetail {
   marketId: number;
   question: string;
-  options: MarketOption[];
+  options: string[];
   marketType: string;
   scalarLow?: number;
   scalarHigh?: number;
@@ -21,12 +21,6 @@ interface MarketDetail {
   closeTime: number;
   totalBets: number;
   totalVolume: number;
-}
-
-interface Session {
-  token: string;
-  hashedUserId: string;
-  crePublicKey: string;
 }
 
 type LoadStatus = "loading" | "error" | "ok";
@@ -41,6 +35,11 @@ export default function MarketPage({
   const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading");
   const [session, setSession] = useState<Session | null>(null);
   const [showDeposit, setShowDeposit] = useState(false);
+
+  useEffect(() => {
+    const cached = loadSession();
+    if (cached) setSession(cached);
+  }, []);
 
   useEffect(() => {
     fetch(`/api/markets/${id}`)
@@ -115,7 +114,12 @@ export default function MarketPage({
           This market is no longer accepting bets.
         </div>
       ) : !session ? (
-        <WorldIDVerify onVerified={setSession} />
+        <WorldIDVerify
+          onVerified={(data) => {
+            saveSession(data);
+            setSession(data);
+          }}
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {/* Deposit toggle */}

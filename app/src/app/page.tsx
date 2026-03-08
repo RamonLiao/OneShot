@@ -2,12 +2,30 @@
 
 import { useEffect, useState } from "react";
 import MarketCard, { type MarketSummary } from "@/components/mini/MarketCard";
+import { loadSession } from "@/lib/session";
 
 type Status = "loading" | "error" | "ok";
 
 export default function Home() {
   const [markets, setMarkets] = useState<MarketSummary[]>([]);
   const [status, setStatus] = useState<Status>("loading");
+  const [balance, setBalance] = useState<number | null>(null);
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    const session = loadSession();
+    if (session) {
+      setHasSession(true);
+      fetch("/api/positions", {
+        headers: { Authorization: `Bearer ${session.token}` },
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.balance != null) setBalance(data.balance);
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/markets")
@@ -47,6 +65,20 @@ export default function Home() {
         <h1 className="text-lg font-bold tracking-tight">OneShot</h1>
       </header>
       <main className="mx-auto max-w-lg px-4 py-4">
+        {hasSession ? (
+          balance != null ? (
+            <div className="mb-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-sm">
+              <span className="text-zinc-400">Your balance: </span>
+              <span className="font-semibold text-zinc-100">
+                ${(balance / 1e6).toFixed(2)} USDC
+              </span>
+            </div>
+          ) : null
+        ) : (
+          <p className="mb-4 text-xs text-zinc-600">
+            Verify with World ID to see your balance
+          </p>
+        )}
         {markets.length === 0 ? (
           <div className="py-20 text-center text-sm text-zinc-500">No markets yet.</div>
         ) : (

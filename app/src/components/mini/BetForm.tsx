@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
-interface MarketOption {
-  id: number;
-  label: string;
-}
+import { getWallets } from "@/lib/session";
 
 interface Props {
   marketId: number;
-  options: MarketOption[];
+  options: string[];
   marketType: string;
   scalarLow?: number;
   scalarHigh?: number;
@@ -65,9 +61,13 @@ export default function BetForm({
   walletAddress,
 }: Props) {
   const isScalar = marketType === "Scalar";
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [scalarValue, setScalarValue] = useState<number>(scalarLow ?? 0);
   const [amount, setAmount] = useState("");
+  const [savedWallets] = useState(() => getWallets());
+  const [walletMode, setWalletMode] = useState<"saved" | "manual">(
+    "saved",
+  );
   const [payoutAddress, setPayoutAddress] = useState(walletAddress ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -101,7 +101,9 @@ export default function BetForm({
     try {
       const ciphertext = await encryptPayload(
         {
-          ...(isScalar ? { scalarValue } : { optionId: selectedOption! }),
+          ...(isScalar
+            ? { scalarValue }
+            : { optionId: options.indexOf(selectedOption!) }),
           amount: String(Math.round(amountNum * 1e6)), // USDC 6 decimals
           payoutChainId: "world-chain",
           payoutAddress,
@@ -179,18 +181,18 @@ export default function BetForm({
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2">
-            {options.map((opt) => (
+            {options.map((label, i) => (
               <button
-                key={opt.id}
+                key={i}
                 type="button"
-                onClick={() => setSelectedOption(opt.id)}
+                onClick={() => setSelectedOption(label)}
                 className={`rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${
-                  selectedOption === opt.id
+                  selectedOption === label
                     ? "border-violet-500 bg-violet-600/20 text-violet-300"
                     : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500"
                 }`}
               >
-                {opt.label}
+                {label}
               </button>
             ))}
           </div>
@@ -233,13 +235,46 @@ export default function BetForm({
         <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
           Your wallet (for payouts)
         </label>
-        <input
-          type="text"
-          value={payoutAddress}
-          onChange={(e) => setPayoutAddress(e.target.value)}
-          placeholder="0x..."
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none truncate"
-        />
+        {savedWallets.length > 0 && (
+          <div className="mb-2 flex gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => setWalletMode("saved")}
+              className={`underline-offset-2 ${walletMode === "saved" ? "text-violet-400 underline" : "text-zinc-500 hover:text-zinc-300"}`}
+            >
+              Saved wallets
+            </button>
+            <button
+              type="button"
+              onClick={() => setWalletMode("manual")}
+              className={`underline-offset-2 ${walletMode === "manual" ? "text-violet-400 underline" : "text-zinc-500 hover:text-zinc-300"}`}
+            >
+              Enter manually
+            </button>
+          </div>
+        )}
+        {savedWallets.length > 0 && walletMode === "saved" ? (
+          <select
+            value={payoutAddress}
+            onChange={(e) => setPayoutAddress(e.target.value)}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-mono text-zinc-100 focus:border-violet-500 focus:outline-none"
+          >
+            <option value="">Select a wallet</option>
+            {savedWallets.map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type="text"
+            value={payoutAddress}
+            onChange={(e) => setPayoutAddress(e.target.value)}
+            placeholder="0x..."
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none truncate"
+          />
+        )}
       </div>
 
       {/* Error */}
