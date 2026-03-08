@@ -56,9 +56,15 @@ export async function POST(req: NextRequest) {
 
   const token = await createSession(hashedUserId);
 
-  // Strip PEM headers/footers and newlines — frontend expects raw base64 DER
-  const rawKey = process.env.CRE_PUBLIC_KEY || "";
-  const crePublicKey = rawKey
+  // CRE_PUBLIC_KEY may be: base64-encoded PEM, raw PEM, or raw base64 DER.
+  // Frontend expects raw base64 DER (no PEM headers).
+  let crePublicKey = process.env.CRE_PUBLIC_KEY || "";
+  // If it looks like base64-encoded PEM (starts with "LS0tLS" = "-----"), decode first
+  if (crePublicKey.startsWith("LS0tLS")) {
+    crePublicKey = Buffer.from(crePublicKey, "base64").toString("utf-8");
+  }
+  // Strip PEM headers/footers and whitespace
+  crePublicKey = crePublicKey
     .replace(/-----BEGIN [A-Z ]+-----/g, "")
     .replace(/-----END [A-Z ]+-----/g, "")
     .replace(/\s+/g, "");

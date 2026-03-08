@@ -120,8 +120,12 @@ export default function BetForm({
       };
 
       if (crePublicKey) {
-        // Strip PEM headers if present (legacy sessions may have them)
-        const cleanKey = crePublicKey
+        // Handle all formats: base64-encoded PEM, raw PEM, or raw base64 DER
+        let cleanKey = crePublicKey;
+        if (cleanKey.startsWith("LS0tLS")) {
+          cleanKey = atob(cleanKey);
+        }
+        cleanKey = cleanKey
           .replace(/-----BEGIN [A-Z ]+-----/g, "")
           .replace(/-----END [A-Z ]+-----/g, "")
           .replace(/\s+/g, "");
