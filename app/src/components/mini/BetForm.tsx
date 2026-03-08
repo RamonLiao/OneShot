@@ -148,7 +148,7 @@ export default function BetForm({
           marketId,
           ciphertext,
           amount: Math.round(amountNum * 1e6),
-          sourceChainId: finalChain,
+          sourceChainId: "world-chain", // funds always deposited on World Chain
         }),
       });
 
