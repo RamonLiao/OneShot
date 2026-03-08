@@ -11,7 +11,7 @@ contract DeployBaseSepolia is Script {
         uint256 deployerPk = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address operator = vm.envAddress("OPERATOR_ADDRESS");
         address trustedSigner = vm.envAddress("CRE_TRUSTED_SIGNER");
-        address tokenAddress = vm.envAddress("USDC_TOKEN_ADDRESS");
+        address tokenAddress = vm.envAddress("USDC_BASE_ADDRESS");
 
         vm.startBroadcast(deployerPk);
         MarketRegistry registry = new MarketRegistry(msg.sender, trustedSigner);

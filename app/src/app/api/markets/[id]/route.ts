@@ -8,7 +8,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const market = db
     .prepare(
       `SELECT m.marketId, m.question, m.options, m.marketType, m.status, m.closeTime,
-              m.resultValue, m.oracleApiUrl,
+              m.resultValue, m.oracleApiUrl, m.scalarLow, m.scalarHigh,
               COUNT(b.betId) as totalBets,
               COALESCE(SUM(b.amount), 0) as totalVolume
        FROM markets m

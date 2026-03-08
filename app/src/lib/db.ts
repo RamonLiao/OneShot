@@ -53,6 +53,8 @@ function initTables(db: Database.Database) {
       status TEXT NOT NULL DEFAULT 'Open',
       resultValue INTEGER,
       oracleApiUrl TEXT,
+      scalarLow INTEGER,
+      scalarHigh INTEGER,
       closeTime INTEGER NOT NULL
     );
 

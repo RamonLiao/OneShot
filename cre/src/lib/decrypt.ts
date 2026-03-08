@@ -12,7 +12,7 @@ export function decryptBet(
   const ciphertext = Buffer.from(ciphertextBase64, "base64");
 
   const decrypted = privateDecrypt(
-    { key: privateKeyPem, padding: constants.RSA_PKCS1_OAEP_PADDING },
+    { key: privateKeyPem, padding: constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha256" },
     ciphertext
   );
 
@@ -20,7 +20,8 @@ export function decryptBet(
 
   return {
     hashedUserId: parsed.hashedUserId || "",
-    optionId: Number(parsed.optionId),
+    optionId: Number(parsed.optionId ?? 0),
+    ...(parsed.scalarValue != null && { scalarValue: Number(parsed.scalarValue) }),
     amount: BigInt(parsed.amount),
     payoutChainId: parsed.payoutChainId,
     payoutAddress: parsed.payoutAddress,

@@ -1,6 +1,7 @@
 export interface DecryptedBet {
   hashedUserId: string;
   optionId: number;
+  scalarValue?: number;
   amount: bigint;
   payoutChainId: string;
   payoutAddress: string;
@@ -93,7 +94,8 @@ function calculateScalarPayouts(
 
   // Calculate distances
   const distances = bets.map((b) => {
-    const diff = BigInt(b.optionId) - resultValue;
+    const guess = b.scalarValue != null ? BigInt(b.scalarValue) : BigInt(b.optionId);
+    const diff = guess - resultValue;
     return diff < 0n ? -diff : diff;
   });
 
