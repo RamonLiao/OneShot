@@ -1,69 +1,138 @@
-# 🌍 Confidential Prediction Market
+# OneShot — Confidential Prediction Market
 
-> **World ID (Proof of Humanness) 🤝 Chainlink CRE (Confidential Compute)**
+> **World ID (Proof of Humanness) + Chainlink CRE (Confidential Compute)**
 
-This is a decentralised prediction/voting market that combines **World ID's proof of humanness** with the **Chainlink Confidential Runtime Environment (CRE)**. We solve two common pain points in traditional prediction markets: "capital determinism" and "voting privacy leakage".
+A decentralized prediction market that combines **World ID's proof of humanness** with the **Chainlink Confidential Runtime Environment (CRE)**. We solve two common pain points in traditional prediction markets: **capital determinism** and **voting privacy leakage**.
 
-Here, we guarantee **"1 person, 1 vote"** and **"absolute privacy for bets"**!
-
----
-
-## 🎯 Core Technological Highlights (Chainlink CRE x Worldcoin)
-
-As general prediction markets focus solely on "capital", this system is exclusively designed for "real humans", making it the perfect showcase for **Worldcoin combined with Chainlink CRE**:
-
-1. **World ID's Sybil Resistance (Proof of Humanness)**
-   - Utilises the built-in IDKit within the World App for Headless Proof verification to block bots.
-   - Ensures every participant is an independent, real human, achieving authentic "1 person, 1 vote" order placement.
-2. **Chainlink CRE's Privacy Computation (Confidential Compute & HTTP)**
-   - Users' actual choices, betting options, and amounts are all confidentially matched within the CRE confidential workflow (TEE).
-   - Only an "anonymised Hash ID" and "event triggers" are recorded on-chain, preventing hackers and on-chain analysts from reverse-engineering individual decisions.
-3. **Seamless Multi-chain Settlement (Multi-chain Payout via CCIP)**
-   - Control contracts (BetIngress, MarketRegistry) are deployed on a single master chain (e.g., World Chain).
-   - Settlement results are seamlessly and privately distributed to Payout Adapters on target chains (Base, Arbitrum, Polygon, etc.) via CRE's multi-chain write capabilities.
+**1 person = 1 vote. Absolute privacy for bets.**
 
 ---
 
-## 🏗 System Architecture
+## Try It
 
-We have designed a highly decoupled architecture comprising a "World Mini App lightweight frontend + control chain ingress + CRE confidential settlement + multi-chain payout".
+**Mini App (World App):** [Open in World App](https://worldcoin.org/mini-app?app_id=app_b9e7e33956cb8c33ff0c6483c9d43c9c)
 
-Below is our operational flow and system module diagram:
+**Web App:** [one-shot-app.vercel.app](https://one-shot-app.vercel.app)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant User as 👤 User (World App)
-    participant MiniApp as 📱 Mini App (Frontend)
-    participant Backend as ⚙️ Backend API
-    participant ControlChain as ⛓️ Control Chain (World Chain)
-    participant CRE as 🛡️ Chainlink CRE (TEE)
-    participant DestChain as 🏦 Destination Chain (Payout Adapter)
+> Open the Mini App link on your phone with World App installed. Verify with World ID, deposit demo funds, and place an encrypted bet.
 
-    User->>MiniApp: Launch project & request World ID verification
-    MiniApp->>Backend: Send IDKit Proof (ZKP)
-    Backend-->>MiniApp: Verification passed, issue encrypted session<br/>(contains anonymised hashedUserId)
-    
-    User->>MiniApp: Place confidential bet in market (with amount, choice, cross-chain preference)
-    MiniApp->>ControlChain: (Via MiniKit) Call BetIngress.placeBet()
-    ControlChain->>CRE: Broadcast BetPlaced event on-chain only (amount hashed)
-    
-    Note over CRE: [Privacy Processing]<br/>1. Fetch secure fields from Backend via Confidential HTTP<br/>2. Update confidential Order Book & positions internally in TEE
-    
-    ControlChain->>CRE: Market closes & resolves result (MarketSettled)
-    Note over CRE: [Confidential Settlement]<br/>Resolve winners internally in TEE, calculate each person's payout
-    
-    CRE->>DestChain: CRE / CCIP multi-chain write: Allocate cross-chain withdrawal amounts for each account
-    User->>DestChain: Perform instant withdrawal (Claim) via Frontend + Backend signature
+---
+
+## Core Highlights
+
+| | Polymarket etc. | OneShot |
+|---|---|---|
+| **Voting power** | Capital-weighted (more money = more votes) | 1 person = 1 vote (World ID) |
+| **Privacy** | Fully transparent on-chain | Individual bets encrypted, only TEE decrypts |
+| **Sybil resistance** | None | World ID Orb-level verification |
+| **Settlement** | On-chain verifiable | TEE attestation + on-chain result verifiable |
+
+### Technology Integration
+
+1. **World ID Sybil Resistance** — MiniKit headless proof verification blocks bots. Every participant is a real, unique human.
+2. **Chainlink CRE Privacy Computation** — Bets are RSA-OAEP encrypted on the frontend. Only the CRE TEE can decrypt. Backend stores ciphertext blindly.
+3. **Multi-chain Settlement** — CRE writes payout results to Vault contracts across Base, Arbitrum, Optimism, and World Chain.
+
+---
+
+## System Architecture
+
+![OneShot Architecture](docs/architecture.png)
+
+### Components
+
+| Component | Technology | Role |
+|-----------|-----------|------|
+| **Mini App** | Next.js + MiniKit | World ID auth, RSA-OAEP encrypt bets, wallet management |
+| **Backend API** | Next.js API Routes + Turso DB | World ID v4 verify, blind ciphertext storage, operator txs |
+| **Control Chain** | Solidity (Base Sepolia) | MarketRegistry + BetIngress — market lifecycle, bet hash proofs |
+| **CRE TEE** | TypeScript + @chainlink/cre-sdk | Decrypt bets, calculate payouts, oracle auto-settle, multi-chain write |
+| **Vault Contracts** | Solidity (4 chains) | deposit/allocate/recordPayout/claim — USDC ERC-20 |
+
+### Privacy Model
+
+```
+Frontend ──RSA-OAEP──▶ Backend ──blind store──▶ On-chain ──hash only──▶ CRE TEE ──decrypt──▶ Multi-chain Payout
+   │                      │                        │                        │
+   │ Encrypts bet with    │ Cannot decrypt.        │ Only keccak256(ct)     │ Only TEE has
+   │ CRE public key       │ Zero knowledge.        │ is recorded.           │ the private key.
 ```
 
-### 🧩 Core Components Explanation
+---
 
-- **World Mini App Frontend**: Built with React/Next.js and runs natively within the World App via MiniKit. Responsible for invoking verification and transmitting non-sensitive transaction structures.
-- **Backend (API Verification Layer)**: Receives the World ID Proof for server-side verification and converts the `nullifier_hash` into an irreversible, anonymised `hashedUserId`, ensuring on-chain footprints are decoupled from real identities.
-- **Control Chain Smart Contracts (World Chain)**: Includes `MarketRegistry` to manage market active states and `BetIngress` as the trigger entry point for events, storing absolutely no personal details.
-- **Chainlink CRE (Confidential Workflow)**: The core brain of the system. Safely intercepts on-chain and API signals, updates portfolios solely within the TEE, and directly triggers distribution across chains upon settlement—maintaining black-box security throughout.
-- **Multi-chain Payout Adapter**: Ultra-lightweight receiving contracts. Receiving settlement instructions from CRE, allowing ultimate winners to directly claim their rewards on their cheapest or preferred L2!
+## Deployed Contracts
+
+| Chain | Contract | Address |
+|-------|----------|---------|
+| Base Sepolia | MarketRegistry | `0xCf334973c9f230c84d3A238Aaf01B821f1100637` |
+| Base Sepolia | BetIngress | `0xAe68654757D3E1d292d1Fe29F7329F249845EF8d` |
+| Base Sepolia | Vault | `0xFf1B821A9Da78e1d193297fc6281e6bA70CbbdCd` |
+| Arbitrum Sepolia | Vault | `0xCf334973c9f230c84d3A238Aaf01B821f1100637` |
+| Optimism Sepolia | Vault | `0xCf334973c9f230c84d3A238Aaf01B821f1100637` |
+| World Chain Sepolia | Vault | `0xCf334973c9f230c84d3A238Aaf01B821f1100637` |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Mini App Frontend | Next.js (App Router) + MiniKit JS |
+| Backend | Next.js API Routes + Turso (libSQL) |
+| Smart Contracts | Solidity ^0.8.24, Foundry |
+| CRE Workflows | TypeScript, @chainlink/cre-sdk v1.1.4 |
+| World ID | MiniKit (mini app) + World ID v4 API |
+| Encryption | RSA-OAEP SHA-256 (Web Crypto API) |
+
+---
+
+## Project Structure
+
+```
+├── app/                    # Next.js frontend + API
+│   ├── src/app/(miniapp)/  # Mini App pages (market, settings)
+│   ├── src/app/api/        # Backend API routes
+│   ├── src/components/     # React components
+│   └── src/lib/            # Shared utilities (auth, db, crypto)
+├── contracts/              # Foundry smart contracts
+│   ├── src/                # MarketRegistry, BetIngress, Vault
+│   ├── script/             # Deploy scripts
+│   └── test/               # Solidity tests
+└── cre/                    # Chainlink CRE workflows
+    ├── src/workflows/      # Settlement + oracle workflows
+    └── tests/              # Workflow tests
+```
+
+---
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+cd app && npm install
+
+# Set environment variables
+cp .env.example .env
+# Fill in: TURSO_DATABASE_URL, TURSO_AUTH_TOKEN, WORLD_APP_ID, etc.
+
+# Run frontend
+cd app && npm run dev
+
+# Run contract tests
+cd contracts && forge test
+
+# Run CRE workflow tests
+cd cre && npm test
+```
+
+---
+
+## Hackathon Tracks
+
+- **Best use of Chainlink CRE** — Confidential HTTP, TEE-encrypted settlement, multi-chain write
+- **Best use of World ID** — Sybil resistance, 1 person 1 vote, privacy-preserving auth
+- **Privacy track** — End-to-end encrypted bets, zero-knowledge backend
 
 ---
 

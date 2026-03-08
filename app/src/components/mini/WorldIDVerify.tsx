@@ -81,10 +81,10 @@ export default function WorldIDVerify({ onVerified }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-900/40">
+    <div className="flex flex-col items-center gap-4 rounded-xl border border-border-dim bg-surface-2 p-6 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-teal/20">
         <svg
-          className="h-7 w-7 text-violet-400"
+          className="h-7 w-7 text-brand-teal"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
@@ -99,10 +99,10 @@ export default function WorldIDVerify({ onVerified }: Props) {
       </div>
 
       <div>
-        <p className="text-sm font-semibold text-zinc-100">
+        <p className="text-sm font-semibold text-text-primary">
           Verify your identity
         </p>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-text-secondary">
           One person, one vote. Verify with World ID to place your bet.
         </p>
       </div>
@@ -110,7 +110,7 @@ export default function WorldIDVerify({ onVerified }: Props) {
       <button
         onClick={handleVerify}
         disabled={status === "verifying" || status === "submitting"}
-        className="w-full rounded-lg bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-surface-0 transition-colors hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {status === "verifying"
           ? "Verifying..."

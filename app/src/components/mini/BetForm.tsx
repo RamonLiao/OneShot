@@ -171,10 +171,10 @@ export default function BetForm({
 
   if (status === "success") {
     return (
-      <div className="rounded-xl border border-emerald-800 bg-emerald-950/50 p-6 text-center">
+      <div className="rounded-xl border border-brand-green/60 bg-brand-green/10 p-6 text-center">
         <div className="mb-2 text-2xl">OK</div>
-        <p className="text-sm font-semibold text-emerald-300">Bet placed!</p>
-        <p className="mt-1 text-xs text-zinc-500 break-all">ID: {betId}</p>
+        <p className="text-sm font-semibold text-brand-green">Bet placed!</p>
+        <p className="mt-1 text-xs text-text-secondary break-all">ID: {betId}</p>
       </div>
     );
   }
@@ -183,7 +183,7 @@ export default function BetForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {/* Prediction input */}
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <label className="mb-1.5 block text-xs font-medium text-text-secondary uppercase tracking-wide">
           Your prediction
         </label>
         {isScalar ? (
@@ -194,7 +194,7 @@ export default function BetForm({
               max={scalarHigh ?? 100}
               value={scalarValue}
               onChange={(e) => setScalarValue(Number(e.target.value))}
-              className="w-full accent-violet-500"
+              className="w-full accent-[#3FDBED]"
             />
             <div className="flex items-center gap-3">
               <input
@@ -202,9 +202,9 @@ export default function BetForm({
                 inputMode="decimal"
                 value={scalarValue}
                 onChange={(e) => setScalarValue(Number(e.target.value))}
-                className="w-24 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-violet-500 focus:outline-none"
+                className="w-24 rounded-lg border border-border-default bg-surface-2 px-3 py-2 text-sm text-text-primary focus:border-brand-teal focus:outline-none"
               />
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-text-secondary">
                 Range: {scalarLow ?? 0} - {scalarHigh ?? 100}
               </span>
             </div>
@@ -218,8 +218,8 @@ export default function BetForm({
                 onClick={() => setSelectedOption(label)}
                 className={`rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${
                   selectedOption === label
-                    ? "border-violet-500 bg-violet-600/20 text-violet-300"
-                    : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500"
+                    ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
+                    : "border-border-default bg-surface-2 text-text-primary hover:border-border-default"
                 }`}
               >
                 {label}
@@ -231,7 +231,7 @@ export default function BetForm({
 
       {/* Amount */}
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <label className="mb-1.5 block text-xs font-medium text-text-secondary uppercase tracking-wide">
           Amount (USDC)
         </label>
         <input
@@ -240,7 +240,7 @@ export default function BetForm({
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="10.00"
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-border-default bg-surface-2 px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim focus:border-brand-teal focus:outline-none"
         />
         <div className="mt-2 grid grid-cols-4 gap-2">
           {QUICK_AMOUNTS.map((v) => (
@@ -250,8 +250,8 @@ export default function BetForm({
               onClick={() => setAmount(String(v))}
               className={`rounded-lg border py-1.5 text-xs font-medium transition-colors ${
                 amount === String(v)
-                  ? "border-violet-500 bg-violet-600/20 text-violet-300"
-                  : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500"
+                  ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
+                  : "border-border-default bg-surface-2 text-text-secondary hover:border-border-default"
               }`}
             >
               ${v}
@@ -262,7 +262,7 @@ export default function BetForm({
 
       {/* Payout address */}
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <label className="mb-1.5 block text-xs font-medium text-text-secondary uppercase tracking-wide">
           Your wallet (for payouts)
         </label>
         {savedWallets.length > 0 && (
@@ -270,14 +270,14 @@ export default function BetForm({
             <button
               type="button"
               onClick={() => setWalletMode("saved")}
-              className={`underline-offset-2 ${walletMode === "saved" ? "text-violet-400 underline" : "text-zinc-500 hover:text-zinc-300"}`}
+              className={`underline-offset-2 ${walletMode === "saved" ? "text-brand-teal underline" : "text-text-secondary hover:text-text-primary"}`}
             >
               Saved wallets
             </button>
             <button
               type="button"
               onClick={() => setWalletMode("manual")}
-              className={`underline-offset-2 ${walletMode === "manual" ? "text-violet-400 underline" : "text-zinc-500 hover:text-zinc-300"}`}
+              className={`underline-offset-2 ${walletMode === "manual" ? "text-brand-teal underline" : "text-text-secondary hover:text-text-primary"}`}
             >
               Enter manually
             </button>
@@ -287,7 +287,7 @@ export default function BetForm({
           <select
             value={selectedWalletIdx}
             onChange={(e) => setSelectedWalletIdx(Number(e.target.value))}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs text-zinc-100 focus:border-violet-500 focus:outline-none"
+            className="w-full rounded-lg border border-border-default bg-surface-2 px-3 py-2.5 text-xs text-text-primary focus:border-brand-teal focus:outline-none"
           >
             {savedWallets.map((w, i) => (
               <option key={`${w.chain}-${w.address}`} value={i}>
@@ -301,7 +301,7 @@ export default function BetForm({
             value={payoutAddress}
             onChange={(e) => setPayoutAddress(e.target.value)}
             placeholder="0x..."
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none truncate"
+            className="w-full rounded-lg border border-border-default bg-surface-2 px-3 py-2.5 text-xs font-mono text-text-primary placeholder:text-text-dim focus:border-brand-teal focus:outline-none truncate"
           />
         )}
       </div>
@@ -315,12 +315,12 @@ export default function BetForm({
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="mt-1 w-full rounded-lg bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-1 w-full rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-surface-0 transition-colors hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {status === "submitting" ? "Placing bet..." : "Place Bet"}
       </button>
 
-      <p className="text-center text-[10px] text-zinc-600">
+      <p className="text-center text-[10px] text-text-dim">
         Your bet is encrypted before submission. No one can see your choice until
         settlement.
       </p>

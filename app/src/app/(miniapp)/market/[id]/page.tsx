@@ -104,8 +104,8 @@ export default function MarketPage({
 
   if (loadStatus === "loading") {
     return (
-      <div className="flex items-center justify-center py-20 text-zinc-500">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-600 border-t-violet-400" />
+      <div className="flex items-center justify-center py-20 text-text-secondary">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border-default border-t-brand-teal" />
       </div>
     );
   }
@@ -123,32 +123,32 @@ export default function MarketPage({
 
   return (
     <div className="flex flex-col gap-5">
-      <a href="/" className="text-xs text-zinc-500 hover:text-zinc-300">
+      <a href="/" className="text-xs text-text-secondary hover:text-text-primary">
         &larr; Back to markets
       </a>
 
       {/* Market info */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+      <div className="rounded-xl border border-border-dim bg-surface-2 p-4">
         <div className="mb-2 flex items-center gap-2">
-          <span className="shrink-0 rounded-full bg-violet-900/60 px-2 py-0.5 text-[11px] font-medium text-violet-300 uppercase tracking-wide">
+          <span className="shrink-0 rounded-full bg-brand-teal/20 px-2 py-0.5 text-[11px] font-medium text-brand-teal uppercase tracking-wide">
             {market.marketType}
           </span>
           <span
             className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
               isOpen
-                ? "bg-emerald-900/60 text-emerald-300"
-                : "bg-zinc-800 text-zinc-500"
+                ? "bg-brand-green/20 text-brand-green"
+                : "bg-surface-3 text-text-secondary"
             }`}
           >
             {isOpen ? "Open" : market.status}
           </span>
         </div>
 
-        <h2 className="text-base font-semibold leading-snug text-zinc-100 break-words">
+        <h2 className="text-base font-semibold leading-snug text-text-primary break-words">
           {market.question}
         </h2>
 
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-secondary">
           <span>{market.totalBets} bets</span>
           <span>${(market.totalVolume / 1e6).toFixed(2)} volume</span>
           <span>Closes {closeDate.toLocaleDateString()}</span>
@@ -157,7 +157,7 @@ export default function MarketPage({
 
       {/* Action area */}
       {!isOpen ? (
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center text-sm text-zinc-500">
+        <div className="rounded-xl border border-border-dim bg-surface-2 p-6 text-center text-sm text-text-secondary">
           This market is no longer accepting bets.
         </div>
       ) : !session ? (
@@ -168,30 +168,30 @@ export default function MarketPage({
           }}
         />
       ) : betLoading ? (
-        <div className="flex items-center justify-center py-10 text-zinc-500">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-600 border-t-violet-400" />
+        <div className="flex items-center justify-center py-10 text-text-secondary">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-default border-t-brand-teal" />
         </div>
       ) : existingBet ? (
-        /* ── Existing position ── */
-        <div className="rounded-xl border border-violet-800/50 bg-violet-950/30 p-5 flex flex-col gap-3">
-          <h3 className="text-sm font-semibold text-violet-300">Your Position</h3>
-          <div className="flex flex-col gap-1.5 text-xs text-zinc-300">
+        /* -- Existing position -- */
+        <div className="rounded-xl border border-brand-teal/30 bg-brand-teal/10 p-5 flex flex-col gap-3">
+          <h3 className="text-sm font-semibold text-brand-teal">Your Position</h3>
+          <div className="flex flex-col gap-1.5 text-xs text-text-primary">
             <div className="flex justify-between">
-              <span className="text-zinc-500">Amount</span>
+              <span className="text-text-secondary">Amount</span>
               <span className="font-medium">${(existingBet.amount / 1e6).toFixed(2)} USDC</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-500">Placed</span>
+              <span className="text-text-secondary">Placed</span>
               <span>{new Date(existingBet.createdAt * 1000).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-500">Bet ID</span>
-              <span className="font-mono text-[11px] text-zinc-500 truncate ml-4 max-w-[180px]">
+              <span className="text-text-secondary">Bet ID</span>
+              <span className="font-mono text-[11px] text-text-secondary truncate ml-4 max-w-[180px]">
                 {existingBet.betId}
               </span>
             </div>
           </div>
-          <p className="text-[11px] text-zinc-600">
+          <p className="text-[11px] text-text-dim">
             Your prediction is encrypted. It will be revealed at settlement.
           </p>
           <button
@@ -204,16 +204,16 @@ export default function MarketPage({
           </button>
         </div>
       ) : (
-        /* ── New bet form ── */
+        /* -- New bet form -- */
         <div className="flex flex-col gap-4">
           {showDeposit ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 flex flex-col gap-3">
+            <div className="rounded-xl border border-border-dim bg-surface-2 p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-zinc-200">Deposit USDC</h3>
+                <h3 className="text-sm font-semibold text-text-primary">Deposit USDC</h3>
                 <button
                   type="button"
                   onClick={() => setShowDeposit(false)}
-                  className="text-xs text-zinc-500 hover:text-zinc-300"
+                  className="text-xs text-text-secondary hover:text-text-primary"
                 >
                   Close
                 </button>
@@ -227,7 +227,7 @@ export default function MarketPage({
             <button
               type="button"
               onClick={() => setShowDeposit(true)}
-              className="self-start text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2"
+              className="self-start text-xs text-brand-teal hover:text-brand-teal/80 underline underline-offset-2"
             >
               Deposit USDC
             </button>

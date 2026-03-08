@@ -73,8 +73,8 @@ export default function Home() {
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center py-20 text-zinc-500">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-600 border-t-violet-400" />
+      <div className="flex items-center justify-center py-20 text-text-secondary">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border-default border-t-brand-teal" />
         <span className="ml-3 text-sm">Loading markets...</span>
       </div>
     );
@@ -92,25 +92,25 @@ export default function Home() {
     <div className="flex flex-col gap-4">
       {hasSession ? (
         balance != null ? (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-sm">
-            <span className="text-zinc-400">Available balance: </span>
-            <span className="font-semibold text-zinc-100">
+          <div className="rounded-xl border border-border-dim bg-surface-2 p-4 text-sm">
+            <span className="text-text-secondary">Available balance: </span>
+            <span className="font-semibold text-text-primary">
               ${(balance / 1e6).toFixed(2)} USDC
             </span>
           </div>
         ) : null
       ) : (
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-text-dim">
           Verify with World ID to see your balance
         </p>
       )}
       {markets.length === 0 ? (
-        <div className="py-20 text-center text-sm text-zinc-500">
+        <div className="py-20 text-center text-sm text-text-secondary">
           No markets yet.
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">
+          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide">
             Active Markets
           </h2>
           {markets.map((m) => (

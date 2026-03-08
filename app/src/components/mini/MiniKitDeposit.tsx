@@ -108,12 +108,12 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
 
   if (status === "success") {
     return (
-      <div className="rounded-xl border border-emerald-800 bg-emerald-950/50 p-6 text-center">
-        <p className="text-sm font-semibold text-emerald-300">
+      <div className="rounded-xl border border-brand-green/60 bg-brand-green/10 p-6 text-center">
+        <p className="text-sm font-semibold text-brand-green">
           Deposit successful!
         </p>
         {newBalance !== null && (
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1 text-xs text-text-secondary">
             Balance: ${(newBalance / 1e6).toFixed(2)} USDC
           </p>
         )}
@@ -124,12 +124,12 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
   return (
     <div className="flex flex-col gap-4">
       {IS_MOCK && (
-        <div className="rounded-lg bg-amber-900/30 border border-amber-800/50 px-3 py-1.5 text-[11px] text-amber-300">
+        <div className="rounded-lg bg-brand-orange/15 border border-brand-orange/30 px-3 py-1.5 text-[11px] text-brand-orange">
           Demo mode — no real funds
         </div>
       )}
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <label className="mb-1.5 block text-xs font-medium text-text-secondary uppercase tracking-wide">
           Deposit Amount (USDC)
         </label>
         <input
@@ -138,7 +138,7 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="10.00"
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-border-default bg-surface-2 px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim focus:border-brand-teal focus:outline-none"
         />
         <div className="mt-2 grid grid-cols-4 gap-2">
           {QUICK_AMOUNTS.map((v) => (
@@ -148,8 +148,8 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
               onClick={() => setAmount(String(v))}
               className={`rounded-lg border py-1.5 text-xs font-medium transition-colors ${
                 amount === String(v)
-                  ? "border-violet-500 bg-violet-600/20 text-violet-300"
-                  : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500"
+                  ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
+                  : "border-border-default bg-surface-2 text-text-secondary hover:border-border-default"
               }`}
             >
               ${v}
@@ -166,7 +166,7 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
         type="button"
         onClick={handleDeposit}
         disabled={status === "submitting"}
-        className="w-full rounded-lg bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-surface-0 transition-colors hover:bg-brand-teal/90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {status === "submitting"
           ? "Processing..."

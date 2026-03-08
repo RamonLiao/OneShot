@@ -31,19 +31,19 @@ export default function MiniAppLayout({
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
+      <div className="flex min-h-screen items-center justify-center bg-surface-0 text-text-secondary">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
-      <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-surface-0 text-text-primary font-sans">
+      <header className="sticky top-0 z-50 border-b border-border-dim bg-surface-1/90 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-bold tracking-tight">OneShot</h1>
         <a
           href="/settings"
-          className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
+          className="rounded-lg p-1.5 text-text-secondary hover:bg-surface-3 hover:text-text-primary transition-colors"
           aria-label="Settings"
         >
           <svg
@@ -64,7 +64,7 @@ export default function MiniAppLayout({
       </header>
       <main className="mx-auto max-w-lg px-4 py-4">{children}</main>
       {!MiniKit.isInstalled() && (
-        <div className="fixed bottom-0 inset-x-0 bg-amber-900/90 text-amber-200 text-xs text-center py-2 px-4">
+        <div className="fixed bottom-0 inset-x-0 bg-brand-orange/80 text-brand-orange text-xs text-center py-2 px-4">
           Not running inside World App. Some features may not work.
         </div>
       )}

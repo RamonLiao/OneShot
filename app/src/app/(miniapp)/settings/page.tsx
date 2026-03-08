@@ -53,18 +53,18 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <a href="/" className="text-xs text-zinc-500 hover:text-zinc-300">
+      <a href="/" className="text-xs text-text-secondary hover:text-text-primary">
         &larr; Back to markets
       </a>
 
-      <h2 className="text-base font-semibold text-zinc-100">Settings</h2>
+      <h2 className="text-base font-semibold text-text-primary">Settings</h2>
 
       {/* Session status */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-        <h3 className="mb-2 text-sm font-medium text-zinc-300">Session</h3>
+      <div className="rounded-xl border border-border-dim bg-surface-2 p-4">
+        <h3 className="mb-2 text-sm font-medium text-text-primary">Session</h3>
         {loggedIn ? (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-emerald-400">
+            <span className="text-xs text-brand-green">
               Verified with World ID
             </span>
             <button
@@ -75,27 +75,27 @@ export default function SettingsPage() {
             </button>
           </div>
         ) : (
-          <span className="text-xs text-zinc-500">Not verified</span>
+          <span className="text-xs text-text-secondary">Not verified</span>
         )}
       </div>
 
       {/* Wallets */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-        <h3 className="mb-3 text-sm font-medium text-zinc-300">
+      <div className="rounded-xl border border-border-dim bg-surface-2 p-4">
+        <h3 className="mb-3 text-sm font-medium text-text-primary">
           Saved Wallets
         </h3>
 
         {wallets.length === 0 ? (
-          <p className="text-xs text-zinc-500 mb-3">No wallets saved yet.</p>
+          <p className="text-xs text-text-secondary mb-3">No wallets saved yet.</p>
         ) : (
           <ul className="mb-3 flex flex-col gap-2">
             {wallets.map((w, i) => (
               <li
                 key={`${w.chain}-${w.address}-${i}`}
-                className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5"
+                className="rounded-lg border border-border-dim bg-surface-0 px-3 py-2.5"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-zinc-200">
+                  <span className="text-xs font-medium text-text-primary">
                     {w.name}
                   </span>
                   <button
@@ -106,10 +106,10 @@ export default function SettingsPage() {
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">
+                  <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] text-text-secondary">
                     {chainLabel(w.chain)}
                   </span>
-                  <span className="text-[11px] font-mono text-zinc-500 truncate">
+                  <span className="text-[11px] font-mono text-text-secondary truncate">
                     {w.address}
                   </span>
                 </div>
@@ -119,13 +119,13 @@ export default function SettingsPage() {
         )}
 
         {/* Add wallet form */}
-        <div className="flex flex-col gap-2 border-t border-zinc-800 pt-3">
+        <div className="flex flex-col gap-2 border-t border-border-dim pt-3">
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Wallet name (optional)"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
+            className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-xs text-text-primary placeholder:text-text-dim focus:border-brand-teal focus:outline-none"
           />
           <input
             type="text"
@@ -135,12 +135,12 @@ export default function SettingsPage() {
               setAddrError("");
             }}
             placeholder="0x..."
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
+            className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-xs font-mono text-text-primary placeholder:text-text-dim focus:border-brand-teal focus:outline-none"
           />
           <select
             value={newChain}
             onChange={(e) => setNewChain(e.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 focus:border-violet-500 focus:outline-none"
+            className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-xs text-text-primary focus:border-brand-teal focus:outline-none"
           >
             {SUPPORTED_CHAINS.map((c) => (
               <option key={c.id} value={c.id}>
@@ -150,7 +150,7 @@ export default function SettingsPage() {
           </select>
           <button
             onClick={handleAdd}
-            className="w-full rounded-lg bg-violet-600 px-4 py-2 text-xs font-semibold text-white hover:bg-violet-500 transition-colors"
+            className="w-full rounded-lg bg-brand-teal px-4 py-2 text-xs font-semibold text-surface-0 hover:bg-brand-teal/90 transition-colors"
           >
             Add Wallet
           </button>

@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #181818;
 }
 
 @theme inline {
@@ -10,12 +10,29 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* OneShot brand colors — World + icon inspired */
+  --color-brand-teal: #3FDBED;
+  --color-brand-orange: #FF5A00;
+  --color-brand-purple: #8600FF;
+  --color-brand-green: #00C230;
+
+  /* Dark palette */
+  --color-surface-0: #0F1012;
+  --color-surface-1: #191C20;
+  --color-surface-2: #1E2028;
+  --color-surface-3: #262830;
+  --color-border-dim: #2A2D36;
+  --color-border-default: #363940;
+  --color-text-primary: #F3F4F5;
+  --color-text-secondary: #9BA3AE;
+  --color-text-dim: #656B78;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0F1012;
+    --foreground: #F3F4F5;
   }
 }
 
