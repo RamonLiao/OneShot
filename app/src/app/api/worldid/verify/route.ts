@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deriveHashedUserId, createSession } from "@/lib/auth";
 import { dbRun } from "@/lib/db";
+import { randomUUID } from "crypto";
 
-// World ID 4.0 uses RP ID + v4 endpoint
 const APP_ID = process.env.WORLD_APP_ID || "";
 const RP_ID = process.env.WORLD_RP_ID || "";
 
@@ -13,20 +13,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  // Use World ID 4.0 v4 endpoint with legacy protocol_version 3.0
   const rpId = RP_ID || APP_ID;
   const verifyUrl = `https://developer.world.org/api/v4/verify/${rpId}`;
+
+  // Map verification_level to identifier (orb, device, etc.)
+  const identifier = verification_level || "orb";
 
   const verifyRes = await fetch(verifyUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      nullifier_hash,
-      proof,
-      merkle_root,
-      verification_level: verification_level || "orb",
+      protocol_version: "3.0",
+      nonce: randomUUID(),
       action: action || "privapoll-auth",
-      signal_hash: "",
+      environment: "production",
+      responses: [
+        {
+          identifier,
+          merkle_root,
+          nullifier: nullifier_hash,
+          proof,
+        },
+      ],
     }),
   });
 
