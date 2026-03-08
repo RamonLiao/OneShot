@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getWallets } from "@/lib/session";
+import { getWallets, type Wallet } from "@/lib/session";
 
 interface Props {
   marketId: number;
@@ -64,10 +64,11 @@ export default function BetForm({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [scalarValue, setScalarValue] = useState<number>(scalarLow ?? 0);
   const [amount, setAmount] = useState("");
-  const [savedWallets] = useState(() => getWallets());
+  const [savedWallets] = useState<Wallet[]>(() => getWallets());
   const [walletMode, setWalletMode] = useState<"saved" | "manual">(
     "saved",
   );
+  const [selectedWalletIdx, setSelectedWalletIdx] = useState(0);
   const [payoutAddress, setPayoutAddress] = useState(walletAddress ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -90,7 +91,16 @@ export default function BetForm({
       setErrorMsg("Enter a valid amount");
       return;
     }
-    if (!payoutAddress || !payoutAddress.startsWith("0x")) {
+    const finalAddress =
+      walletMode === "saved" && savedWallets.length > 0
+        ? savedWallets[selectedWalletIdx]?.address
+        : payoutAddress;
+    const finalChain =
+      walletMode === "saved" && savedWallets.length > 0
+        ? savedWallets[selectedWalletIdx]?.chain
+        : "world-chain";
+
+    if (!finalAddress || !finalAddress.startsWith("0x")) {
       setErrorMsg("Enter a valid payout address");
       return;
     }
@@ -99,17 +109,25 @@ export default function BetForm({
     setErrorMsg("");
 
     try {
-      const ciphertext = await encryptPayload(
-        {
-          ...(isScalar
-            ? { scalarValue }
-            : { optionId: options.indexOf(selectedOption!) }),
-          amount: String(Math.round(amountNum * 1e6)), // USDC 6 decimals
-          payoutChainId: "world-chain",
-          payoutAddress,
-        },
-        crePublicKey,
-      );
+      let ciphertext = "";
+      const betPayload = {
+        ...(isScalar
+          ? { scalarValue }
+          : { optionId: options.indexOf(selectedOption!) }),
+        amount: String(Math.round(amountNum * 1e6)),
+        payoutChainId: finalChain,
+        payoutAddress: finalAddress,
+      };
+
+      if (crePublicKey) {
+        try {
+          ciphertext = await encryptPayload(betPayload, crePublicKey);
+        } catch {
+          setStatus("error");
+          setErrorMsg("Encryption failed — CRE public key may be invalid");
+          return;
+        }
+      }
 
       const res = await fetch("/api/bet", {
         method: "POST",
@@ -121,7 +139,7 @@ export default function BetForm({
           marketId,
           ciphertext,
           amount: Math.round(amountNum * 1e6),
-          sourceChainId: "world-chain",
+          sourceChainId: finalChain,
         }),
       });
 
@@ -255,14 +273,13 @@ export default function BetForm({
         )}
         {savedWallets.length > 0 && walletMode === "saved" ? (
           <select
-            value={payoutAddress}
-            onChange={(e) => setPayoutAddress(e.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-mono text-zinc-100 focus:border-violet-500 focus:outline-none"
+            value={selectedWalletIdx}
+            onChange={(e) => setSelectedWalletIdx(Number(e.target.value))}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs text-zinc-100 focus:border-violet-500 focus:outline-none"
           >
-            <option value="">Select a wallet</option>
-            {savedWallets.map((w) => (
-              <option key={w} value={w}>
-                {w}
+            {savedWallets.map((w, i) => (
+              <option key={`${w.chain}-${w.address}`} value={i}>
+                {w.name} ({w.chain})
               </option>
             ))}
           </select>
