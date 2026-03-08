@@ -11,6 +11,20 @@ export default function MiniAppLayout({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Prevent zoom on mobile inputs
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (meta) {
+      meta.setAttribute(
+        "content",
+        "width=device-width, initial-scale=1, maximum-scale=1"
+      );
+    } else {
+      const newMeta = document.createElement("meta");
+      newMeta.name = "viewport";
+      newMeta.content = "width=device-width, initial-scale=1, maximum-scale=1";
+      document.head.appendChild(newMeta);
+    }
+
     MiniKit.install(process.env.NEXT_PUBLIC_WORLD_APP_ID);
     setReady(true);
   }, []);
@@ -26,7 +40,7 @@ export default function MiniAppLayout({
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
       <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm px-4 py-3">
-        <h1 className="text-lg font-bold tracking-tight">PrivaPoll</h1>
+        <h1 className="text-lg font-bold tracking-tight">OneShot</h1>
       </header>
       <main className="mx-auto max-w-lg px-4 py-4">{children}</main>
       {!MiniKit.isInstalled() && (

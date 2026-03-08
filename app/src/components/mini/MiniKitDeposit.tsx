@@ -9,6 +9,8 @@ interface Props {
 
 type Status = "idle" | "submitting" | "success" | "error";
 
+const QUICK_AMOUNTS = [1, 5, 10, 20];
+
 export default function MiniKitDeposit({ hashedUserId, token }: Props) {
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -17,7 +19,7 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
 
   async function handleDeposit() {
     const amountNum = parseFloat(amount);
-    if (!amountNum || amountNum <= 0) {
+    if (isNaN(amountNum) || amountNum <= 0) {
       setErrorMsg("Enter a valid amount");
       return;
     }
@@ -44,7 +46,7 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
             ).toString(),
           },
         ],
-        description: "Deposit to PrivaPoll",
+        description: "Deposit to OneShot",
       });
 
       if (result.finalPayload.status !== "success") {
@@ -103,14 +105,29 @@ export default function MiniKitDeposit({ hashedUserId, token }: Props) {
           Deposit Amount (USDC)
         </label>
         <input
-          type="number"
-          step="0.01"
-          min="0.01"
+          type="text"
+          inputMode="decimal"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="10.00"
           className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
         />
+        <div className="mt-2 flex gap-2">
+          {QUICK_AMOUNTS.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setAmount(String(v))}
+              className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${
+                amount === String(v)
+                  ? "border-violet-500 bg-violet-600/20 text-violet-300"
+                  : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500"
+              }`}
+            >
+              ${v}
+            </button>
+          ))}
+        </div>
       </div>
 
       {(status === "error" || errorMsg) && (

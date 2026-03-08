@@ -15,15 +15,12 @@ interface Props {
   scalarHigh?: number;
   token: string;
   crePublicKey: string;
+  walletAddress?: string;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-const SOURCE_CHAINS = [
-  { id: "base-sepolia", name: "Base Sepolia" },
-  { id: "arbitrum-sepolia", name: "Arbitrum Sepolia" },
-  { id: "optimism-sepolia", name: "Optimism Sepolia" },
-];
+const QUICK_AMOUNTS = [1, 5, 10, 20];
 
 /**
  * RSA-OAEP encrypt the bet payload using the CRE public key.
@@ -65,14 +62,13 @@ export default function BetForm({
   scalarHigh,
   token,
   crePublicKey,
+  walletAddress,
 }: Props) {
   const isScalar = marketType === "Scalar";
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [scalarValue, setScalarValue] = useState<number>(scalarLow ?? 0);
   const [amount, setAmount] = useState("");
-  const [sourceChain, setSourceChain] = useState(SOURCE_CHAINS[0].id);
-  const [payoutChain, setPayoutChain] = useState(SOURCE_CHAINS[0].id);
-  const [payoutAddress, setPayoutAddress] = useState("");
+  const [payoutAddress, setPayoutAddress] = useState(walletAddress ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [betId, setBetId] = useState("");
@@ -90,7 +86,7 @@ export default function BetForm({
       return;
     }
     const amountNum = parseFloat(amount);
-    if (!amountNum || amountNum <= 0) {
+    if (isNaN(amountNum) || amountNum <= 0) {
       setErrorMsg("Enter a valid amount");
       return;
     }
@@ -107,7 +103,7 @@ export default function BetForm({
         {
           ...(isScalar ? { scalarValue } : { optionId: selectedOption! }),
           amount: String(Math.round(amountNum * 1e6)), // USDC 6 decimals
-          payoutChainId: payoutChain,
+          payoutChainId: "world-chain",
           payoutAddress,
         },
         crePublicKey,
@@ -123,7 +119,7 @@ export default function BetForm({
           marketId,
           ciphertext,
           amount: Math.round(amountNum * 1e6),
-          sourceChainId: sourceChain,
+          sourceChainId: "world-chain",
         }),
       });
 
@@ -170,9 +166,8 @@ export default function BetForm({
             />
             <div className="flex items-center gap-3">
               <input
-                type="number"
-                min={scalarLow ?? 0}
-                max={scalarHigh ?? 100}
+                type="text"
+                inputMode="decimal"
                 value={scalarValue}
                 onChange={(e) => setScalarValue(Number(e.target.value))}
                 className="w-24 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-violet-500 focus:outline-none"
@@ -208,63 +203,42 @@ export default function BetForm({
           Amount (USDC)
         </label>
         <input
-          type="number"
-          step="0.01"
-          min="0.01"
+          type="text"
+          inputMode="decimal"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="10.00"
           className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
         />
-      </div>
-
-      {/* Source chain */}
-      <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
-          Source chain (deduct from)
-        </label>
-        <select
-          value={sourceChain}
-          onChange={(e) => setSourceChain(e.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 focus:border-violet-500 focus:outline-none"
-        >
-          {SOURCE_CHAINS.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
+        <div className="mt-2 flex gap-2">
+          {QUICK_AMOUNTS.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setAmount(String(v))}
+              className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${
+                amount === String(v)
+                  ? "border-violet-500 bg-violet-600/20 text-violet-300"
+                  : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500"
+              }`}
+            >
+              ${v}
+            </button>
           ))}
-        </select>
-      </div>
-
-      {/* Payout chain */}
-      <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
-          Payout chain (receive winnings)
-        </label>
-        <select
-          value={payoutChain}
-          onChange={(e) => setPayoutChain(e.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100 focus:border-violet-500 focus:outline-none"
-        >
-          {SOURCE_CHAINS.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        </div>
       </div>
 
       {/* Payout address */}
       <div>
         <label className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
-          Payout address
+          Your wallet (for payouts)
         </label>
         <input
           type="text"
           value={payoutAddress}
           onChange={(e) => setPayoutAddress(e.target.value)}
           placeholder="0x..."
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm font-mono text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none truncate"
         />
       </div>
 
