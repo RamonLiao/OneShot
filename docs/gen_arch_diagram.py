@@ -101,24 +101,25 @@ draw.text((cx_ctrl+18, L2Y+78), "BetIngress.sol", fill=ACCENT_TEAL, font=font_bo
 draw.text((cx_ctrl+18, L2Y+96), "  • ciphertextHash on-chain proof", fill=TEXT_GRAY, font=font_small)
 draw.text((cx_ctrl+18, L2Y+114), "  • 1 bet per user per market enforced", fill=TEXT_GRAY, font=font_small)
 
-# CRE TEE
+# CRE TEE — narrower, balanced with Control Chain
 cx_cre = 620
-rounded_rect(cx_cre, L2Y, 700, 130, (25, 30, 45), ACCENT_GREEN)
-draw.text((cx_cre+350, L2Y+14), "🛡️ Chainlink CRE (TEE)", fill=ACCENT_GREEN, font=font_heading, anchor="mt")
+cre_w = 540
+rounded_rect(cx_cre, L2Y, cre_w, 130, (25, 30, 45), ACCENT_GREEN)
+draw.text((cx_cre+cre_w//2, L2Y+14), "🛡️ Chainlink CRE (TEE)", fill=ACCENT_GREEN, font=font_heading, anchor="mt")
 draw.text((cx_cre+18, L2Y+40), "• Decrypt bets with private key", fill=TEXT_GRAY, font=font_small)
 draw.text((cx_cre+18, L2Y+58), "• Calculate payouts in enclave", fill=TEXT_GRAY, font=font_small)
 draw.text((cx_cre+18, L2Y+78), "• Oracle auto-settle (Cron)", fill=TEXT_GRAY, font=font_small)
 draw.text((cx_cre+18, L2Y+96), "• Multi-chain write to Vaults", fill=TEXT_GRAY, font=font_small)
-draw.text((cx_cre+350, L2Y+114), "Only TEE can see bet contents", fill=ACCENT_GREEN, font=font_label, anchor="mt")
+draw.text((cx_cre+cre_w//2, L2Y+114), "Only TEE can see bet contents", fill=ACCENT_GREEN, font=font_label, anchor="mt")
 
 # L1 → L2 arrows
 # Backend → Control Chain
 draw_arrow(880, L1Y+120, 400, L2Y, ARROW_COLOR)
 draw.text((620, L1Y+142), "placeBet() / setResult()", fill=TEXT_DIM, font=font_label, anchor="mt")
 
-# Backend → CRE (Confidential HTTP)
-draw_arrow(1020, L1Y+120, 970, L2Y, ACCENT_ORANGE)
-draw.text((1020, L1Y+142), "Confidential HTTP", fill=TEXT_DIM, font=font_label, anchor="mt")
+# Backend → CRE (Confidential HTTP) — label offset to avoid overlap
+draw_arrow(1020, L1Y+120, 950, L2Y, ACCENT_ORANGE)
+draw.text((1048, L1Y+135), "Confidential HTTP", fill=TEXT_DIM, font=font_label, anchor="lt")
 
 # Control Chain → CRE (EVM Log)
 draw_arrow(520, L2Y+65, 620, L2Y+65, ARROW_COLOR)
@@ -143,7 +144,7 @@ for name, color, cx in chains:
     draw.text((cx+130, L3Y+90), "USDC ERC-20", fill=TEXT_DIM, font=font_small, anchor="mt")
 
 # CRE → Vault arrows (fan out from CRE bottom center)
-cre_bottom_x = cx_cre + 350
+cre_bottom_x = cx_cre + cre_w // 2
 cre_bottom_y = L2Y + 130
 for name, color, cx in chains:
     target_x = cx + 130
