@@ -19,7 +19,7 @@ export function encryptForCRE(payload: BetPayload): Buffer {
     amount: payload.amount.toString(),
   });
   const key = createPublicKey(CRE_PUBLIC_KEY);
-  return publicEncrypt({ key, padding: constants.RSA_PKCS1_OAEP_PADDING }, Buffer.from(json));
+  return publicEncrypt({ key, padding: constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha256" }, Buffer.from(json));
 }
 
 /**

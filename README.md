@@ -10,11 +10,20 @@ A decentralised prediction market that combines **World ID's proof of humanness*
 
 ## Try It
 
-**Mini App (World App):** [Open in World App](https://worldcoin.org/mini-app?app_id=app_b9e7e33956cb8c33ff0c6483c9d43c9c)
+| Platform | Link |
+|----------|------|
+| **Web App (Browser)** | [one-shot-app.vercel.app](https://one-shot-app.vercel.app) |
+| **Mini App (World App)** | [Open in World App](https://world.org/mini-app?app_id=app_b9e7e33956cb8c33ff0c6483c9d43c9c&path=&draft_id=meta_7b4e7111d1e40a95e6417fc130ae3a10) |
 
-**Web App:** [one-shot-app.vercel.app](https://one-shot-app.vercel.app)
+**Scan to open Mini App in World App:**
 
-> Open the Mini App link on your phone with World App installed. Verify with World ID, deposit demo funds, and place an encrypted bet.
+<p align="center">
+  <img src="docs/OneShot-QRCode.png" alt="OneShot Mini App QR Code" width="280" />
+</p>
+
+> **Browser:** Click the Web App link → Enter Demo Mode → deposit demo funds → place an encrypted bet.
+>
+> **World App:** Scan the QR code or tap the Mini App link → verify with World ID → deposit → bet.
 
 ---
 
