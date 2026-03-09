@@ -2,7 +2,7 @@
 
 > **World ID (Proof of Humanness) + Chainlink CRE (Confidential Compute)**
 
-A decentralized prediction market that combines **World ID's proof of humanness** with the **Chainlink Confidential Runtime Environment (CRE)**. We solve two common pain points in traditional prediction markets: **capital determinism** and **voting privacy leakage**.
+A decentralised prediction market that combines **World ID's proof of humanness** with the **Chainlink Confidential Runtime Environment (CRE)**. We solve two common pain points in traditional prediction markets: **capital determinism** and **voting privacy leakage**.
 
 **1 person = 1 vote. Absolute privacy for bets.**
 
